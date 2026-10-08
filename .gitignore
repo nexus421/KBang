@@ -3,6 +3,8 @@
 config.json
 # Workspace of the agentic plan execution, never part of the project
 .superpowers/
+# Design notes, kept locally only
+docs/
 
 .gradle
 build/

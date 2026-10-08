@@ -6,8 +6,7 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 
 KBang is a small Ktor service: upload one Kotlin file, get back a static native binary or a fat JAR, built
 synchronously with JBang and GraalVM. [README.md](README.md) documents behaviour, configuration, endpoints and
-deployment, [docs/superpowers/specs/2026-10-07-kbang-design.md](docs/superpowers/specs/2026-10-07-kbang-design.md)
-the design decisions and why they were made.
+deployment. The reasons behind non-obvious decisions are in the KDoc of the code they concern.
 
 It follows the conventions of [DemoAiProject](https://github.com/nexus421/DemoAiProject) (read its README before
 touching library-related code) and is structured like [KNot](https://github.com/nexus421/KNot).
