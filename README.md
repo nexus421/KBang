@@ -238,6 +238,38 @@ broken config (exit code 78) and kills every running build when the service stop
 not supported on aarch64 for a long time. If `--libc=musl` fails there, set `nativeOptions` to
 `["-Ob", "--static-nolibc"]` (static except glibc) and build on the oldest glibc your targets have. Not tested yet.
 
+### Docker
+
+The `Dockerfile` is the same setup as above in one image (x86_64 only): GraalVM, JBang, the musl toolchain and
+`kbang.jar`, at the paths `config.example.json` expects. Nothing but Docker is needed on the host.
+
+```bash
+docker build -t kbang .
+
+# One API key per client: the key goes to the client, the printed entry into apiKeys of the config
+docker run --rm kbang key name=laptop
+
+# config.json: a copy of config.example.json with "listenHost": "0.0.0.0" (the container's own interface,
+# the port is published to the host's loopback below), your publicUrl and the apiKeys entry
+docker run -d --name kbang --init --restart on-failure:5 \
+  --read-only --tmpfs /tmp --cap-drop ALL --security-opt no-new-privileges \
+  -v kbang-data:/var/lib/kbang -v "$PWD/config.json:/etc/kbang/config.json:ro" \
+  -p 127.0.0.1:8080:8080 kbang
+```
+
+- **Volume.** `/var/lib/kbang` holds the JBang cache, the local Maven repository and the workspaces. Without the
+  volume every new container downloads the Kotlin compiler and all dependencies again.
+- **`--init`.** KBang stops builds through their process groups and needs an init process that reaps the orphans.
+- **`--read-only` and `--tmpfs /tmp`.** The same as `ProtectSystem=strict` and `PrivateTmp` in `kbang.service`.
+  The native-image driver keeps its `/tmp/driverRoot-*` there, which also disappears with the container.
+- **Memory.** native-image needs a few GB. A `--memory` limit that is too low ends a build with an out-of-memory
+  kill, which shows up as a failed build.
+- **Smoke test.** The script is part of the image, so the check including the leftovers runs in the container:
+  `docker exec -u kbang -e KBANG_KEY=<key> -e JAVA_HOME=/opt/graalvm -e KBANG_WORKDIR=/var/lib/kbang/work kbang bash /opt/kbang/smoke-test.sh <publicUrl>`.
+  GitHub Actions does this on every change that can affect the image (`.github/workflows/docker.yml`).
+- **Proxy and ARM.** The notes above apply unchanged. For ARM the `Dockerfile` needs the `linux-aarch64` GraalVM
+  archive and the musl paths of that architecture, which is not tested.
+
 ## Not in scope (deliberately)
 
 Asynchronous jobs, a result cache, several source files per build, cross-compilation for another architecture, a

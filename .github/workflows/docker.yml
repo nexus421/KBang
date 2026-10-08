@@ -1,0 +1,60 @@
+name: Docker image
+
+# Builds the image and runs the smoke test (native build, JAR build, disconnect, leftovers) inside the container
+# the way README, Docker, recommends to run it. A native build takes minutes, so only changes that can affect the
+# image start it.
+on:
+  push:
+    branches: ['**']
+    paths:
+      - Dockerfile
+      - .dockerignore
+      - .github/workflows/docker.yml
+      - build.gradle.kts
+      - settings.gradle.kts
+      - config.example.json
+      - deploy/**
+      - src/main/**
+  workflow_dispatch:
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  image:
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    steps:
+      - uses: actions/checkout@v4
+
+      - run: docker build -t kbang .
+
+      - name: Start the container
+        run: |
+          KEY=$(docker run --rm kbang key name=ci 2> /dev/null)
+          echo "::add-mask::$KEY"
+          echo "KBANG_KEY=$KEY" >> "$GITHUB_ENV"
+          HASH=$(printf %s "$KEY" | sha256sum | cut -d' ' -f1)
+          jq --arg hash "$HASH" '.listenHost = "0.0.0.0" | .publicUrl = "http://127.0.0.1:8080" | .apiKeys = [{name: "ci", sha256: $hash}]' \
+            config.example.json > "$RUNNER_TEMP/config.json"
+          chmod 644 "$RUNNER_TEMP/config.json"
+          docker run -d --name kbang --init --read-only --tmpfs /tmp --cap-drop ALL --security-opt no-new-privileges \
+            -v kbang-data:/var/lib/kbang -v "$RUNNER_TEMP/config.json:/etc/kbang/config.json:ro" \
+            -p 127.0.0.1:8080:8080 kbang
+          for _ in $(seq 1 30)
+          do
+            curl -fs http://127.0.0.1:8080/health && exit 0
+            sleep 1
+          done
+          echo "KBang did not come up" >&2
+          exit 1
+
+      - name: Smoke test inside the container
+        run: |
+          docker exec -u kbang -e KBANG_KEY -e JAVA_HOME=/opt/graalvm -e KBANG_WORKDIR=/var/lib/kbang/work \
+            kbang bash /opt/kbang/smoke-test.sh http://127.0.0.1:8080
+
+      - name: Container log
+        if: always()
+        run: docker logs kbang

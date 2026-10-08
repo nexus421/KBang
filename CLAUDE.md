@@ -57,6 +57,10 @@ The client script lives in `src/main/resources/kbang.sh` with `__KBANG_URL__` as
 `smoke-test.sh` checks a running KBang through the real client one-liner, and on the KBang host also that nothing
 is left behind.
 
+The `Dockerfile` repeats the manual setup of README.md (Deployment) and ships `deploy/smoke-test.sh`.
+`.github/workflows/docker.yml` builds the image and runs the smoke test in it, there is no Docker on the
+development machine.
+
 Keep README.md and KDoc in sync with the code in the same change.
 
 ## Text rules
