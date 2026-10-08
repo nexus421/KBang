@@ -1,0 +1,38 @@
+[Unit]
+Description=KBang: builds native binaries and fat JARs from single Kotlin files
+After=network-online.target
+Wants=network-online.target
+# At most 5 starts within 2 minutes, then systemd gives up. Start again after fixing the cause:
+# systemctl reset-failed kbang && systemctl start kbang
+StartLimitIntervalSec=120
+StartLimitBurst=5
+
+[Service]
+Type=simple
+# A dedicated system user (see README, Deployment). Its home holds the JBang cache (~/.jbang), the local Maven
+# repository (~/.m2) and the build workspaces.
+User=kbang
+Group=kbang
+Environment=HOME=/var/lib/kbang
+WorkingDirectory=/var/lib/kbang
+# The GraalVM that builds the native images also runs KBang itself, one JDK is enough
+ExecStart=/opt/graalvm/bin/java -jar /opt/kbang/kbang.jar config=/etc/kbang/config.json
+# 1 (start failed, e.g. the port is taken) or a crash: try again after 10 s
+Restart=on-failure
+RestartSec=10
+# 78 (EX_CONFIG): the config file was rejected. Fix it, then systemctl restart kbang
+RestartPreventExitStatus=78
+# 143: the JVM's exit code after a SIGTERM (systemctl stop), which is a clean stop, not a failure
+SuccessExitStatus=143
+# Every build runs in this unit's cgroup, so stopping the service also kills every running build
+KillMode=control-group
+
+# Hardening. Builds only need to write below /var/lib/kbang and to their private /tmp.
+NoNewPrivileges=yes
+PrivateTmp=yes
+ProtectSystem=strict
+ProtectHome=yes
+ReadWritePaths=/var/lib/kbang
+
+[Install]
+WantedBy=multi-user.target

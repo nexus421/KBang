@@ -1,0 +1,29 @@
+### KBang ###
+# The real config holds the API key hashes and the host paths, only config.example.json is versioned
+config.json
+# Workspace of the agentic plan execution, never part of the project
+.superpowers/
+
+.gradle
+build/
+!gradle/wrapper/gradle-wrapper.jar
+!**/src/main/**/build/
+!**/src/test/**/build/
+
+### IntelliJ IDEA ###
+.idea/
+*.iws
+*.iml
+*.ipr
+out/
+!**/src/main/**/out/
+!**/src/test/**/out/
+
+### Kotlin ###
+.kotlin
+
+### VS Code ###
+.vscode/
+
+### Mac OS ###
+.DS_Store

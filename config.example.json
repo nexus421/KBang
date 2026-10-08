@@ -1,0 +1,21 @@
+{
+  "listenHost": "127.0.0.1",
+  "listenPort": 8080,
+  "publicUrl": "https://kbang.example.com",
+  "apiKeys": [
+    { "name": "laptop", "sha256": "REPLACE_ME_WITH_THE_SHA256_FROM_java_-jar_kbang.jar_key" }
+  ],
+  "jbang": "/opt/jbang/bin/jbang",
+  "environment": {
+    "JAVA_HOME": "/opt/graalvm",
+    "PATH": "/opt/musl/bin:/opt/graalvm/bin:/usr/local/bin:/usr/bin:/bin"
+  },
+  "offline": false,
+  "nativeOptions": ["-Ob", "--static", "--libc=musl"],
+  "maxUploadKb": 256,
+  "maxParallelBuilds": 1,
+  "maxQueuedBuilds": 4,
+  "buildTimeoutMinutes": 10,
+  "maxLogKb": 64,
+  "workDir": "/var/lib/kbang/work"
+}
