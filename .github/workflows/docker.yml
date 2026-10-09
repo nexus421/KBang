@@ -39,7 +39,7 @@ jobs:
           jq --arg hash "$HASH" '.listenHost = "0.0.0.0" | .publicUrl = "http://127.0.0.1:8080" | .apiKeys = [{name: "ci", sha256: $hash}]' \
             config.example.json > "$RUNNER_TEMP/config.json"
           chmod 644 "$RUNNER_TEMP/config.json"
-          docker run -d --name kbang --init --read-only --tmpfs /tmp --cap-drop ALL --security-opt no-new-privileges \
+          docker run -d --name kbang --init --read-only --tmpfs /tmp:exec --cap-drop ALL --security-opt no-new-privileges \
             -v kbang-data:/var/lib/kbang -v "$RUNNER_TEMP/config.json:/etc/kbang/config.json:ro" \
             -p 127.0.0.1:8080:8080 kbang
           for _ in $(seq 1 30)

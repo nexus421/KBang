@@ -252,7 +252,7 @@ docker run --rm kbang key name=laptop
 # config.json: a copy of config.example.json with "listenHost": "0.0.0.0" (the container's own interface,
 # the port is published to the host's loopback below), your publicUrl and the apiKeys entry
 docker run -d --name kbang --init --restart on-failure:5 \
-  --read-only --tmpfs /tmp --cap-drop ALL --security-opt no-new-privileges \
+  --read-only --tmpfs /tmp:exec --cap-drop ALL --security-opt no-new-privileges \
   -v kbang-data:/var/lib/kbang -v "$PWD/config.json:/etc/kbang/config.json:ro" \
   -p 127.0.0.1:8080:8080 kbang
 ```
@@ -260,7 +260,8 @@ docker run -d --name kbang --init --restart on-failure:5 \
 - **Volume.** `/var/lib/kbang` holds the JBang cache, the local Maven repository and the workspaces. Without the
   volume every new container downloads the Kotlin compiler and all dependencies again.
 - **`--init`.** KBang stops builds through their process groups and needs an init process that reaps the orphans.
-- **`--read-only` and `--tmpfs /tmp`.** The same as `ProtectSystem=strict` and `PrivateTmp` in `kbang.service`.
+- **`--read-only` and `--tmpfs /tmp:exec`.** The same as `ProtectSystem=strict` and `PrivateTmp` in `kbang.service`.
+  Without `:exec` Docker mounts the tmpfs `noexec`, and the smoke test could not run the binary it builds in `/tmp`.
   The native-image driver keeps its `/tmp/driverRoot-*` there, which also disappears with the container.
 - **Memory.** native-image needs a few GB. A `--memory` limit that is too low ends a build with an out-of-memory
   kill, which shows up as a failed build.
