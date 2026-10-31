@@ -5,6 +5,10 @@
 ![Ktor](https://img.shields.io/badge/dynamic/regex?url=https%3A%2F%2Fraw.githubusercontent.com%2Fnexus421%2FKBang%2Fmaster%2Fbuild.gradle.kts&search=id%5C%28%22io%5C.ktor%5C.plugin%22%5C%29%20version%20%22%28%5B%5E%22%5D%2B%29%22&replace=%241&label=Ktor&logo=ktor&logoColor=white&color=087CFA)
 ![JDK](https://img.shields.io/badge/dynamic/regex?url=https%3A%2F%2Fraw.githubusercontent.com%2Fnexus421%2FKBang%2Fmaster%2Fbuild.gradle.kts&search=JavaLanguageVersion%5C.of%5C%28%28%5Cd%2B%29%5C%29&replace=%241%20%28Corretto%29&label=JDK&logo=openjdk&logoColor=white&color=ED8B00)
 
+> [!NOTE]
+> **Maintenance mode:** This project is no longer under active development.
+> Bug reports and pull requests are still welcome and will be reviewed.
+
 **K**otlin + **Bang**, like [JBang](https://www.jbang.dev): upload one Kotlin/JVM file, get back a static native binary or a fat JAR. KBang exists so
 that small scripts and tools can be written in plain Kotlin instead of Bash or Python, while the servers that run
 them need neither a JVM nor a compiler. A static binary from KBang runs on any Linux machine of the same CPU
